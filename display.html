@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Title Display</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+        }
+
+        #titleDisplay {
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .word {
+            display: inline-block;
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        #composition {
+            width: var(--comp-width, 1080px);
+            height: var(--comp-height, 1350px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+<div id="composition">
+    <h1 id="titleDisplay"></h1>
+</div>
+
+<script>
+    // Retrieve values from localStorage
+const title = localStorage.getItem("title");
+const animationSpeed = parseFloat(localStorage.getItem("speed")) || 1;
+const bgColor = localStorage.getItem("bgColor") || "#FFFFFF";
+const textColor = localStorage.getItem("textColor") || "#000000";
+const compWidth = localStorage.getItem("compWidth") || "1080px";
+const compHeight = localStorage.getItem("compHeight") || "1350px";
+const fontSize = localStorage.getItem("fontSize") || "3rem";
+
+document.body.style.backgroundColor = bgColor;
+document.body.style.color = textColor;
+document.documentElement.style.setProperty('--comp-width', compWidth);
+document.documentElement.style.setProperty('--comp-height', compHeight);
+document.getElementById("titleDisplay").style.fontSize = fontSize;
+
+const segments = title.split(/\\\\/);  // Split on '\\'
+let words = [];
+segments.forEach(segment => {
+    const segmentWords = segment.split(/\s+/);
+    words.push(...segmentWords);
+    words.push('<br>');  // Add a break after each segment
+});
+if (words[words.length - 1] === '<br>') words.pop();  // Remove the last unnecessary '<br>'
+
+let wordIndex = 0;
+const intervalBetweenWords = animationSpeed / words.length;
+
+function displayNextWord() {
+    if (wordIndex < words.length) {
+        let span;
+        if (words[wordIndex] === '<br>') {
+            span = document.createElement("br");
+            document.getElementById("titleDisplay").appendChild(span);
+            wordIndex++;
+            setTimeout(displayNextWord, intervalBetweenWords * 1000);
+        } else {
+            span = document.createElement("span");
+            span.className = "word";
+            span.innerHTML = words[wordIndex] + '&nbsp;';
+            document.getElementById("titleDisplay").appendChild(span);
+            gsap.to(span, {
+                duration: 0.5,
+                opacity: 1,
+                y: 0,
+                ease: "power2.out",
+                onComplete: function() {
+                    wordIndex++;
+                    setTimeout(displayNextWord, intervalBetweenWords * 1000);
+                }
+            });
+        }
+    }
+}
+
+displayNextWord();
+
+</script>
+</body>
+
+</html>
